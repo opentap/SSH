@@ -6,9 +6,9 @@ using System.ComponentModel;
 using OpenTap;
 using Renci.SshNet;
 
-namespace OnsDemo
+namespace OpenTap.Plugins.SshStep
 {
-    [Display("SshCommandStep")]
+    [Display("SSH Command", "Run a single command using a session setup by an SSH Session step.", Group: "SSH")]
     [AllowAsChildIn(typeof(SshSessionStep))]
     public class SshCommandStep : TestStep
     {

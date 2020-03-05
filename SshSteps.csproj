@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTAP" Version="9.2.3" />
+    <PackageReference Include="OpenTAP" Version="9.6.4" />
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
   </ItemGroup>
 </Project>

@@ -6,10 +6,10 @@ using System.ComponentModel;
 using OpenTap;
 using Renci.SshNet;
 
-namespace OnsDemo
+namespace OpenTap.Plugins.SshStep
 {
-    [Display("MyFirstTestStep")]
-    public class MyFirstTestStep : TestStep
+    [Display("Stand-alone SSH Command.","Runs a one or more commands on a specified host via SSH.", Group: "SSH")]
+    public class StandAloneSshCommandStep : TestStep
     {
         #region Settings
         [Display("Host Name", "Host name or IP address of the machine to connect to.","Connection")]
@@ -23,7 +23,7 @@ namespace OnsDemo
         public string Command { get; set; }
         #endregion
 
-        public MyFirstTestStep()
+        public StandAloneSshCommandStep()
         {
             Host = "localhost";
             UserName = "demo";
