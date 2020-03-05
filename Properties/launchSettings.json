@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OpenTAP Editor": {
+      "commandName": "Executable",
+      "executablePath": "./Editor.exe"
+    }
+  }
+}

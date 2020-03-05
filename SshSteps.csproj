@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!-- We are debugging using NET Framework, but builds to Netstandard in release mode to ensure cross platform compatibility -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -10,6 +11,15 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <CreateOpenTapPackage>true</CreateOpenTapPackage>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <!-- We are setting TargetFramework in debug configuration, otherwise Visual Studio tries to attach a .NET Core debugger. That will not work, because the program we open is a .NET Framework executable -->
+    <TargetFramework>net462</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <AdditionalOpenTapPackage Include="Editor CE"/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="OpenTAP" Version="9.6.4" />
