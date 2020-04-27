@@ -7,9 +7,10 @@ using Renci.SshNet;
 
 namespace OpenTap.Plugins.Ssh
 {
-    [Display("SSH Session", "Starts/stops an SSH login session to a remote host. Use SSH Command steps as child steps to run commands in this session.", Group: "SSH")]
+    [Display("SSH Session", "Starts/stops an SSH login session to a remote host. Use child steps to interact with this session.", Group: "SSH")]
     [AllowChildrenOfType(typeof(SshCommandStep))]
     [AllowChildrenOfType(typeof(ScpUploadFileStep))]
+    [AllowChildrenOfType(typeof(ScpDownloadFileStep))]
     public class SshSessionStep : TestStep
     {
         internal class SshSessionStepResource : SshResource

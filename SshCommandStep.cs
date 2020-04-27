@@ -44,7 +44,7 @@ namespace OpenTap.Plugins.Ssh
         }
     }
 
-    [Display("SSH Command", "Run a single command using a session setup by an SSH Session step.", Group: "SSH")]
+    [Display("SSH Command", "Run a command using a session setup by an SSH Session step, SSH Instrument or SSH Dut.", Group: "SSH")]
     public class SshCommandStep : SshStepBase
     {
         #region Settings

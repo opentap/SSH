@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OpenTap.Plugins.Ssh
 {
-    [Display("Upload File", Group: "SSH", Description: "Upload a file to the instrument using Scp")]
+    [Display("Upload File", Group: "SSH", Description: "Uses SCP to upload a file to a remote host defined by an SSH Session step, SSH Instrument or SSH Dut.")]
     public class ScpUploadFileStep : SshStepBase
     {
         private string fileContentAsBase64 = null;
