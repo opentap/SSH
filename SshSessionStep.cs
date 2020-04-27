@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,48 +8,36 @@ using Renci.SshNet;
 namespace OpenTap.Plugins.SshStep
 {
     [Display("SSH Session", "Starts/stops an SSH login session to a remote host. Use SSH Command steps as child steps to run commands in this session.", Group: "SSH")]
+    [AllowChildrenOfType(typeof(SshCommandStep))]
     public class SshSessionStep : TestStep
     {
-        internal SshClient Client { get; private set; }
+        /// <summary>
+        /// The SSH client. Childsteps can use this. 
+        /// </summary>
+        public SshClient SshClient { get; private set; }
+
 
         #region Settings
-        [Display("Host Name", "Host name or IP address of the machine to connect to.","Connection")]
-        public string Host { get; set; }
-        [Display("User Name", Group: "Connection")]
-        public string UserName { get; set; }
-        [Display("Password",  Group: "Connection")]
-        public string Password { get; set; }
+        [EmbedProperties]
+        public SshConnectionInfo Connection { get; set; }
         #endregion
 
         public SshSessionStep()
         {
-            
-            Host = "localhost";
-            UserName = "demo";
-            Password = "12345678";
-        }
-
-        public override void PrePlanRun()
-        {
-            base.PrePlanRun();
-            // ToDo: Optionally add any setup code this step needs to run before the testplan starts
+            Connection = new SshConnectionInfo() { Owner = this };
+            Name = "SSH Session on {User Name}@{Host Name}";
         }
 
         public override void Run()
         {
-            using(var client = new SshClient(Host,UserName,Password))
+            using (var ssh = new SshClient(Connection.GetConnectionInfo()))
+            //using (var scp = new ScpClient(Connection.GetConnectionInfo()))
             {
-                client.Connect();
-                Client = client;
+                ssh.Connect();
+                SshClient = ssh;
                 RunChildSteps();
-                client.Disconnect();
+                ssh.Disconnect();
             }
-        }
-
-        public override void PostPlanRun()
-        {
-            // ToDo: Optionally add any cleanup code this step needs to run after the entire testplan has finished
-            base.PostPlanRun();
         }
     }
 }
