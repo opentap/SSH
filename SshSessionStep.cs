@@ -5,7 +5,7 @@ using System.ComponentModel;
 using OpenTap;
 using Renci.SshNet;
 
-namespace OpenTap.Plugins.SshStep
+namespace OpenTap.Plugins.Ssh
 {
     [Display("SSH Session", "Starts/stops an SSH login session to a remote host. Use SSH Command steps as child steps to run commands in this session.", Group: "SSH")]
     [AllowChildrenOfType(typeof(SshCommandStep))]

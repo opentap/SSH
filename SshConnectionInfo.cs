@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.Security;
 using System.Runtime.InteropServices;
 
-namespace OpenTap.Plugins.SshStep
+namespace OpenTap.Plugins.Ssh
 {
     /// <summary>
     /// Class containing settings related to an SSH connection (host name, user name, etc.). 

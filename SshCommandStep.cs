@@ -6,7 +6,7 @@ using System.ComponentModel;
 using OpenTap;
 using Renci.SshNet;
 
-namespace OpenTap.Plugins.SshStep
+namespace OpenTap.Plugins.Ssh
 {
     public abstract class SshStepBase : TestStep
     {

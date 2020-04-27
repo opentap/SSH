@@ -1,6 +1,6 @@
 ﻿using Renci.SshNet;
 
-namespace OpenTap.Plugins.SshStep
+namespace OpenTap.Plugins.Ssh
 {
     [Display("Ssh Resource Baseclass", Group: "SSH", Description: "Resource controlled via SSH.")]
     public abstract class SshResource : Resource
