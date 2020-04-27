@@ -1,4 +1,5 @@
 ﻿using Renci.SshNet;
+using System;
 
 namespace OpenTap.Plugins.Ssh
 {
@@ -7,7 +8,7 @@ namespace OpenTap.Plugins.Ssh
     {
         protected SshClient sshClient;
         protected ScpClient scpClient;
-        private bool IsResourceOpened;
+        protected bool IsOpened;
 
         #region Settings
         [EmbedProperties]
@@ -34,7 +35,7 @@ namespace OpenTap.Plugins.Ssh
         {
             get
             {
-                if (sshClient == null && IsResourceOpened)
+                if (sshClient == null && IsOpened)
                 {
                     sshClient = new SshClient(Connection.GetConnectionInfo());
                     sshClient.Connect();
@@ -53,7 +54,7 @@ namespace OpenTap.Plugins.Ssh
         {
             get
             {
-                if (scpClient == null && IsResourceOpened)
+                if (scpClient == null && IsOpened)
                 {
                     scpClient = new ScpClient(Connection.GetConnectionInfo());
                     scpClient.Connect();
@@ -68,7 +69,7 @@ namespace OpenTap.Plugins.Ssh
         /// </summary>
         public override void Open()
         {
-            IsResourceOpened = true;
+            IsOpened = true;
             if(!LazyConnectSsh)
             {
                 IsConnected = SshClient.IsConnected; // just do somthing to trigger the getter.
@@ -84,7 +85,7 @@ namespace OpenTap.Plugins.Ssh
         /// </summary>
         public override void Close()
         {
-            IsResourceOpened = false;
+            IsOpened = false;
             if (sshClient == null)
                 sshClient.Disconnect();
             sshClient = null;

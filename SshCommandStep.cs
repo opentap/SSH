@@ -10,19 +10,6 @@ namespace OpenTap.Plugins.Ssh
 {
     public abstract class SshStepBase : TestStep
     {
-        protected class SshSessionStepResource : SshResource
-        {
-            public override void Open()
-            {
-                // Do nothing. It is the SshSessionStep that controls the lifetime of this session
-            }
-
-            public override void Close()
-            {
-                // Do nothing. It is the SshSessionStep that controls the lifetime of this session
-            }
-        }
-
         #region Settings
         [ResourceOpen(ResourceOpenBehavior.Ignore)]
         public IEnumerable<SshResource> sshSessions
@@ -33,9 +20,9 @@ namespace OpenTap.Plugins.Ssh
                 var parent = this.Parent;
                 while (parent != null)
                 {
-                    if (parent is SshSessionStep sesstionStep)
+                    if (parent is SshSessionStep sessionStep)
                     {
-                        parentSessions.Add(new SshSessionStepResource() { Connection = sesstionStep.Connection } );
+                        parentSessions.Add(sessionStep.SshResource);
                     }
                     parent = parent.Parent;
                 }
@@ -75,7 +62,6 @@ namespace OpenTap.Plugins.Ssh
             SshCommand command = SshResource.SshClient.RunCommand(Command);
             if(command.ExitStatus == 0)
             {
-                UpgradeVerdict(Verdict.Pass);
                 //using(var reader = new StreamReader(command.OutputStream))
                 //    Log.Info(reader.ReadToEnd());
                 foreach (var line in command.Result.Trim().Split('\n'))
@@ -86,8 +72,8 @@ namespace OpenTap.Plugins.Ssh
             else
             {
                 Log.Warning(command.Error);
-                UpgradeVerdict(Verdict.Fail);
             }
+
         }
     }
 }
