@@ -8,7 +8,7 @@ $(GitVersion) - Gets the version from Git in the recommended format Major.Minor.
 -->
 <Package Name="Ssh" Version="$(GitVersion)" OS="Windows,Linux" Architecture="AnyCPU" xmlns="http://opentap.io/schemas/package">
   <Dependencies>
-    <PackageDependency Package="OpenTAP" Version="^9.7" />
+    <PackageDependency Package="OpenTAP" Version="^9.5" />
   </Dependencies>
   <Description>This package provides steps, and other resources (Instrument and DUT) to run commands and copy files to/from remote hosts vis SSH and SCP.</Description>
   <Files>
