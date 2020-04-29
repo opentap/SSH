@@ -10,7 +10,7 @@ Build:
   image: opentapio/opentap:9.7-ubuntu18.04
   tags: [ docker, gce ]
   script:
-    - dotnet --list-sdks
+    - apt install locales locales-all
     - dotnet publish SshSteps.sln -c Release
   artifacts:
     expire_in: 1 day
