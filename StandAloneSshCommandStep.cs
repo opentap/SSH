@@ -6,18 +6,14 @@ using System.ComponentModel;
 using OpenTap;
 using Renci.SshNet;
 
-namespace OpenTap.Plugins.SshStep
+namespace OpenTap.Plugins.Ssh
 {
     [Display("Stand-alone SSH Command.","Runs a one or more commands on a specified host via SSH.", Group: "SSH")]
     public class StandAloneSshCommandStep : TestStep
     {
         #region Settings
-        [Display("Host Name", "Host name or IP address of the machine to connect to.","Connection")]
-        public string Host { get; set; }
-        [Display("User Name", Group: "Connection")]
-        public string UserName { get; set; }
-        [Display("Password",  Group: "Connection")]
-        public string Password { get; set; }
+        [EmbedProperties]
+        public SshConnectionInfo Connection { get; set; }
         [Display("Command", Description: "Command to execute on remote.", Group: "Command")]
         [Layout(LayoutMode.FullRow, 10)]
         public string Command { get; set; }
@@ -25,9 +21,7 @@ namespace OpenTap.Plugins.SshStep
 
         public StandAloneSshCommandStep()
         {
-            Host = "localhost";
-            UserName = "demo";
-            Password = "12345678";
+            Connection = new SshConnectionInfo();
             Command = "pwd";
             Name = "SSH {User Name}@{Host Name}";
         }
@@ -35,7 +29,7 @@ namespace OpenTap.Plugins.SshStep
         public override void Run()
         {
             // ToDo: Add test case code here
-            using(var client = new SshClient(Host,UserName,Password))
+            using(var client = new SshClient(Connection.GetConnectionInfo()))
             {
                 client.Connect();
                 var command = client.RunCommand(Command.Replace("\r", "").Replace('\n', ';'));

@@ -6,11 +6,14 @@ Version: The version of the package. Must be in a semver 2.0 compatible format. 
 For Version the following macro is available (Only works if the project directory is under Git source control):
 $(GitVersion) - Gets the version from Git in the recommended format Major.Minor.Build-PreRelease+CommitHash.BranchName.
 -->
-<Package Name="SshSteps" xmlns="http://opentap.io/schemas/package" InfoLink="" Version="0.1.0-alpha">
-  <Description>TestSteps that can run commands on a remote host via SSH.</Description>
+<Package Name="Ssh" Version="$(GitVersion)" OS="Windows,Linux" Architecture="AnyCPU" xmlns="http://opentap.io/schemas/package">
+  <Dependencies>
+    <PackageDependency Package="OpenTAP" Version="^9.5" />
+  </Dependencies>
+  <Description>This package provides steps, and other resources (Instrument and DUT) to run commands and copy files to/from remote hosts vis SSH and SCP.</Description>
   <Files>
-    <File Path="Packages/SshSteps/SshSteps.dll" SourcePath="SshSteps.dll">
-        <SetAssemblyInfo Attributes="Version"/>
+    <File Path="Packages/Ssh/OpenTap.Plugins.Ssh.dll">
+      <SetAssemblyInfo Attributes="Version"/>
     </File>
   </Files>
 </Package>

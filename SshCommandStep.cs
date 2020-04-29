@@ -6,44 +6,74 @@ using System.ComponentModel;
 using OpenTap;
 using Renci.SshNet;
 
-namespace OpenTap.Plugins.SshStep
+namespace OpenTap.Plugins.Ssh
 {
-    [Display("SSH Command", "Run a single command using a session setup by an SSH Session step.", Group: "SSH")]
-    [AllowAsChildIn(typeof(SshSessionStep))]
-    public class SshCommandStep : TestStep
+    public abstract class SshStepBase : TestStep
+    {
+        #region Settings
+        [ResourceOpen(ResourceOpenBehavior.Ignore)]
+        public IEnumerable<SshResource> sshSessions
+        {
+            get
+            {
+                var parentSessions = new List<SshResource>();
+                var parent = this.Parent;
+                while (parent != null)
+                {
+                    if (parent is SshSessionStep sessionStep)
+                    {
+                        parentSessions.Add(sessionStep.SshResource);
+                    }
+                    parent = parent.Parent;
+                }
+                return parentSessions.Concat(
+                        InstrumentSettings.Current.OfType<SshResource>()
+                        .Concat(DutSettings.Current.OfType<SshResource>()));
+            }
+        }
+
+        [Display("Connection", "Use SSH session defined by this Instrument, DUT or Parent step.")]
+        [AvailableValues(nameof(sshSessions))]
+        public SshResource SshResource { get; set; }
+        #endregion
+
+        public SshStepBase()
+        {
+            SshResource = sshSessions.FirstOrDefault();
+            Rules.Add(() => SshResource != null, "Connection must be set.", nameof(SshResource));
+        }
+    }
+
+    [Display("SSH Command", "Run a command using a session setup by an SSH Session step, SSH Instrument or SSH Dut.", Group: "SSH")]
+    public class SshCommandStep : SshStepBase
     {
         #region Settings
         public string Command { get; set; }
         #endregion
+
         public SshCommandStep()
         {
             Command = "pwd";
-        }
-        public override void Run()
-        {
-            SshClient client = GetParent<SshSessionStep>().Client;
-            var command = client.RunCommand(Command);
-                if(command.ExitStatus == 0)
-                {
-                    UpgradeVerdict(Verdict.Pass);
-                    //using(var reader = new StreamReader(command.OutputStream))
-                    //    Log.Info(reader.ReadToEnd());
-                    foreach (var line in command.Result.Trim().Split('\n'))
-                    {
-                        Log.Info(line);
-                    }
-                }
-                else
-                {
-                    Log.Warning(command.Error);
-                    UpgradeVerdict(Verdict.Pass);
-                }
+            Name = "SSH Command {Command}";
         }
 
-        public override void PostPlanRun()
+        public override void Run()
         {
-            // ToDo: Optionally add any cleanup code this step needs to run after the entire testplan has finished
-            base.PostPlanRun();
+            SshCommand command = SshResource.SshClient.RunCommand(Command);
+            if(command.ExitStatus == 0)
+            {
+                //using(var reader = new StreamReader(command.OutputStream))
+                //    Log.Info(reader.ReadToEnd());
+                foreach (var line in command.Result.Trim().Split('\n'))
+                {
+                    Log.Info(line);
+                }
+            }
+            else
+            {
+                Log.Warning(command.Error);
+            }
+
         }
     }
 }
