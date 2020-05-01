@@ -32,4 +32,4 @@ Publish:
     - Build
   script:
     - tap package install PackagePublish
-    - tap package publish -k $REPO_PUBLISH_KEY -r packages.opentap.io bin/Release/Ssh.*.TapPackage
+    - tap package publish -k $REPO_PUBLISH_KEY -r packages.opentap.io bin/Release/SSH.*.TapPackage
