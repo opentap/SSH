@@ -22,3 +22,4 @@ version = 0.3.0
 # specified in this file), if it originates from a commit that has an annotated tag that matches
 # the following regular expression. (Note that the actual value of the tag is not used).
 # Uncomment to change the default.
+#release tag = v\d+\.\d+

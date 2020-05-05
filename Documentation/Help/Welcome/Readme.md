@@ -1,0 +1,3 @@
+# Welcome
+
+This OpenTAP package includes ssh and scp instruments, for interacting with instruments using ssh commands and copying files using scp. Furthermore it also includes a ssh DUT for controlling a DUT via ssh. It contains steps for interacting with created instruments and DUT, but also stand alone steps that manage the session and commands. Ssh and scp sessions can be created using password or ssh key authentication.
