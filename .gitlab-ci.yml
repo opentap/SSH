@@ -36,11 +36,11 @@ Build:
   tags: [docker,gce]
   script:
     - apt install locales locales-all
-    - dotnet publish -o ../bin -c Release
+    - dotnet publish -c Release
   artifacts:
     expire_in: 1 day
     paths:
-       - bin/*.TapPackage
+       - OpenTap.Plugins.$PLUGIN/bin/Release/*.TapPackage
 #----------------------------------------------------------------------------------------------------------------------  
 
 #############################################
