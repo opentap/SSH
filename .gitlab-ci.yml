@@ -54,7 +54,7 @@ Tests:
     - Build
   script:
     - apt install locales locales-all
-    - dotnet publish -o ../bin
+    - dotnet publish -o ../bin -c Release
     - dotnet vstest bin/OpenTap.Plugins.$PLUGIN.UnitTests.dll
 #----------------------------------------------------------------------------------------------------------------------
 
