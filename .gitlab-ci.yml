@@ -36,11 +36,11 @@ Build:
   tags: [docker,gce]
   script:
     - apt install locales locales-all
-    - dotnet publish OpenTap.Plugins.Ssh.sln -c Release
+    - dotnet publish -o ../bin -c Release
   artifacts:
     expire_in: 1 day
     paths:
-       - bin/
+       - bin/*.TapPackage
 #----------------------------------------------------------------------------------------------------------------------  
 
 #############################################
