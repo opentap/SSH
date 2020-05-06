@@ -53,7 +53,7 @@ Tests:
   dependencies:
     - Build
   script:
-    - dotnet restore
+    - apt install locales locales-all
     - dotnet publish -o ../bin
     - dotnet vstest bin/OpenTap.Plugins.$PLUGIN.UnitTests.dll
 #----------------------------------------------------------------------------------------------------------------------
