@@ -100,10 +100,10 @@ namespace OpenTap.Plugins.Ssh
         public override void Close()
         {
             IsOpened = false;
-            if (sshClient == null)
+            if (sshClient != null)
                 sshClient.Disconnect();
             sshClient = null;
-            if (scpClient == null)
+            if (scpClient != null)
                 scpClient.Disconnect();
             scpClient = null;
             IsConnected = true;

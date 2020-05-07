@@ -116,7 +116,7 @@ namespace OpenTap.Plugins.Ssh
                 return step.Name;
             if (Owner is IResource resource)
                 return resource.Name;
-            return Owner.ToString();
+            return Owner?.ToString();
         }
 
         private static string ConvertToUnsecureString(System.Security.SecureString securePassword)
