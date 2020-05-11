@@ -1,6 +1,31 @@
+variables:
+  REPO_URL: 'packages.opentap.io'
+  DOCKER_REGISTRY: 'registry.gitlab.com'
+  PLUGIN: 'Ssh'
+#----------------------------------------------------------------------------------------------------------------------
+
 stages:
+  - docs
   - build
+  - tests
   - publish
+  - stage
+#----------------------------------------------------------------------------------------------------------------------
+
+#############################################
+# Stage: docs                               #
+#############################################
+Documentation:
+  stage: docs
+  image: $DOCKER_REGISTRY/opentap/buildrunners/documentationgeneration:latest
+  tags: [docker,gce]
+  script:
+    - tap generate-chm "Documentation/Help/Readme.md" --out "$PLUGIN/Help.chm" --title "OpenTAP $PLUGIN Package Help" --startpage "Documentation/Help/Welcome/Readme.md"
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $PLUGIN/*.chm
+#----------------------------------------------------------------------------------------------------------------------
 
 #############################################
 # Stage: build                              #
@@ -8,14 +33,30 @@ stages:
 Build:
   stage: build
   image: opentapio/opentap:9.7-ubuntu18.04
-  tags: [ docker, gce ]
+  tags: [docker,gce]
   script:
     - apt install locales locales-all
-    - dotnet publish SshSteps.sln -c Release
+    - dotnet publish -c Release
   artifacts:
     expire_in: 1 day
     paths:
-       - bin/
+       - OpenTap.Plugins.$PLUGIN/bin/Release/*.TapPackage
+#----------------------------------------------------------------------------------------------------------------------  
+
+#############################################
+# Stage: tests                              #
+#############################################
+Tests:
+  stage: tests
+  image: opentapio/opentap:9.7-ubuntu18.04
+  tags: [docker,gce]
+  dependencies:
+    - Build
+  script:
+    - apt install locales locales-all
+    - dotnet publish -o ../bin -c Release
+    - dotnet vstest bin/OpenTap.Plugins.$PLUGIN.UnitTests.dll
+#----------------------------------------------------------------------------------------------------------------------
 
 #############################################
 # Stage: publish                            #
@@ -23,13 +64,15 @@ Build:
 Publish:
   stage: publish
   image: opentapio/opentap:9.7-slim-ubuntu18.04
-  tags: [ docker, gce ]
+  tags: [docker,gce]
   only:
     - tags
     - /^release.*$/
     - master
   dependencies:
     - Build
+    - Tests
   script:
     - tap package install PackagePublish
-    - tap package publish -k $REPO_PUBLISH_KEY -r packages.opentap.io bin/Release/SSH.*.TapPackage
+    - tap package publish -k $REPO_PUBLISH_KEY -r $REPO_URL bin/$PLUGIN*.TapPackage
+#----------------------------------------------------------------------------------------------------------------------
