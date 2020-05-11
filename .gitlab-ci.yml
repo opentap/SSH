@@ -74,5 +74,5 @@ Publish:
     - Tests
   script:
     - tap package install PackagePublish
-    - tap package publish -k $REPO_PUBLISH_KEY -r $REPO_URL OpenTap.Plugins.$PLUGIN/bin/Release/$PLUGIN*.TapPackage
+    - tap package publish -k $REPO_PUBLISH_KEY -r $REPO_URL OpenTap.Plugins.Ssh/bin/Release/SSH*.TapPackage
 #----------------------------------------------------------------------------------------------------------------------
