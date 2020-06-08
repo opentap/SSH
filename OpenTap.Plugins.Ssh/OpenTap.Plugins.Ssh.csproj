@@ -18,11 +18,11 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <AdditionalOpenTapPackage Include="Editor CE"/>
+    <AdditionalOpenTapPackage Include="Editor CE" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="OpenTAP" Version="9.7.0" />
-    <PackageReference Include="SSH.NET" Version="2016.1.0" />
+    <PackageReference Include="SSH.NET" Version="2016.0.0" />
   </ItemGroup>
 </Project>
