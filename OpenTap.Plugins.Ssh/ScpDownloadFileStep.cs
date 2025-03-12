@@ -25,6 +25,10 @@ namespace OpenTap.Plugins.Ssh
         public string DownloadPath { get; set; }
         [Display(Name: "Remote File Path", Description: "Download file from here", Group: "Action")]
         public string FilePath { get; set; }
+
+        [Display(Name: "Publish", Description: "Publish the downloaded file as an artifact.", Group: "Artifact")]
+        public bool PublishArtifact { get; set; }
+
         #endregion
 
         /// <summary>
@@ -41,20 +45,16 @@ namespace OpenTap.Plugins.Ssh
         /// </summary>
         public override void Run()
         {
-            using (var ms = new MemoryStream())
+            var timer = Stopwatch.StartNew();
+
+            using (FileStream file = new FileStream(DownloadPath, FileMode.Create, FileAccess.Write))
             {
-                var timer = Stopwatch.StartNew();
-                SshResource.ScpClient.Download(FilePath, ms);
-                using (FileStream file = new FileStream(DownloadPath, FileMode.Create, FileAccess.Write))
-                {
-                    byte[] bytes = new byte[ms.Length];
-                    ms.Seek(0, SeekOrigin.Begin);
-                    int len = ms.Read(bytes, 0, (int)ms.Length);
-                    file.Write(bytes, 0, len);
-                    ms.Close();
-                    Log.Debug(timer, $"Downloaded {len / 1024} Kb from {FilePath} to {DownloadPath}.");
-                }
+                SshResource.ScpClient.Download(FilePath, file);
+                Log.Debug(timer, $"Downloaded {DownloadPath} - {Utils.FriendlySize(file.Length)}");
             }
+
+            if (PublishArtifact)
+                StepRun.PublishArtifact(DownloadPath);
         }
     }
 }
