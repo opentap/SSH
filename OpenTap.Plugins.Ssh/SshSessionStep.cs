@@ -43,7 +43,7 @@ namespace OpenTap.Plugins.Ssh
             }
             public override string ToString()
             {
-                return SshSessionStep.Name;
+                return SshSessionStep.GetFormattedName();
             }
         }
 
@@ -70,7 +70,6 @@ namespace OpenTap.Plugins.Ssh
         public override void Run()
         {
             using (var ssh = new SshClient(Connection.GetConnectionInfo()))
-            //using (var scp = new ScpClient(Connection.GetConnectionInfo()))
             {
                 ssh.Connect();
                 SshClient = ssh;
