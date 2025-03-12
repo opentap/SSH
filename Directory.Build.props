@@ -1,6 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <OpenTapVersion>9.19.0</OpenTapVersion>
+    <OpenTapVersion>9.22.3</OpenTapVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath> <!-- Removes the `netstandard2.0` from directory output -->
     <MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish> <!-- Remove dependency on razor, this is required to run without the razor dependencies -->
     <PreserveCompilationContext>false</PreserveCompilationContext> <!-- Does not copy refs folder that contains dependency that are already installed with OpenTAP -->
