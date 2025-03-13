@@ -82,21 +82,22 @@ namespace OpenTap.Plugins.Ssh
         [Output]
         [Browsable(true)]
         [EnabledIf(nameof(OutputResponse), HideIfDisabled = true)]
-        [Display("Response", Group: "Response", Collapsed: true, Order:1)]
+        [Display("Response", Description:"The standard output (stdout) of the executed program.", Group: "Response", Collapsed: true, Order:1)]
         public string Response { get; private set; }
 
         [Output]
         [Browsable(true)]
-        [Display("Exit Code", Group: "Response", Collapsed: true, Order:1)]
+        [Display("Exit Code", Description:"The exit code of the command.", Group: "Response", Collapsed: true, Order:1)]
         public int ExitCode { get; private set; }
 
         [Display("Enabled", Group: "Timeout")]
         public bool TimeoutEnabled { get; set; }
         [Display("Timeout", Group: "Timeout")]
         [Unit("s")]
+        [EnabledIf(nameof(TimeoutEnabled), HideIfDisabled = true)]
         public double Timeout { get; set; } = 5.0;
 
-        [Display("Check Exit Code", Group: "Response", Collapsed: true, Order:0)]
+        [Display("Check Exit Code", Description: "Sets the test step verdict based on the exit code. Exit code 0 will cause the step to pass, all other exit codes will cause it to fail.", Group: "Response", Collapsed: true, Order:0)]
         public bool CheckExitCode { get; set; }
         #endregion
 
