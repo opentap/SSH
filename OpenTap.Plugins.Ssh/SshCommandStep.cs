@@ -29,10 +29,10 @@ namespace OpenTap.Plugins.Ssh
         {
             get
             {
-                var parentSession = this.GetParent<SshSessionStep>()?.SshResource;
-                return new List<SshResource>{parentSession}.Concat(
-                        InstrumentSettings.Current.OfType<SshResource>()
-                        .Concat(DutSettings.Current.OfType<SshResource>()));
+                var parentSession = this.GetParent<SshSessionStep>()?.GetSshResource();
+                return (parentSession == null ? Array.Empty<SshResource>() : new[] { parentSession })
+                    .Concat(InstrumentSettings.Current.OfType<SshResource>()
+                    .Concat(DutSettings.Current.OfType<SshResource>()));
             }
         }
 
