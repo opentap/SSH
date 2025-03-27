@@ -39,6 +39,13 @@ namespace OpenTap.Plugins.Ssh
             Name = "Ssh";
             Connection = new SshConnectionInfo() { Owner = this };
         }
+        protected SshResource(bool session, ITestStep step)
+        {
+            Name = "Ssh";
+            Connection = new SshConnectionInfo() { Owner = this };
+            _isSession = session;
+            _step = step;
+        }
         
         /// <summary>
         /// Get an SshClient to the host represented by this resource. 
@@ -109,8 +116,12 @@ namespace OpenTap.Plugins.Ssh
             IsConnected = true;
         }
 
+        private bool _isSession = false;
+        private ITestStep _step;
+
         public override string ToString()
         {
+            if (_isSession) return _step.GetFormattedName();
             return base.ToString() + $"({Connection.Username}@{Connection.Host}:{Connection.Port})";
         }
     }

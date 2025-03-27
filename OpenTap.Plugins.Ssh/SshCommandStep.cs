@@ -24,6 +24,7 @@ namespace OpenTap.Plugins.Ssh
     public abstract class SshStepBase : TestStep
     {
         #region Settings
+
         [ResourceOpen(ResourceOpenBehavior.Ignore)]
         public IEnumerable<SshResource> sshSessions
         {
@@ -41,14 +42,13 @@ namespace OpenTap.Plugins.Ssh
         public SshResource BackingResource { get; set; }
         [Display("Connection", "Use SSH session defined by this Instrument, DUT or Parent step.")]
         [AvailableValues(nameof(sshSessions))]
-        [XmlIgnore]
         [Browsable(true)]
         public SshResource SshResource
         {
-            get => BackingResource ?? GetParent<SshSessionStep>()?.SshResource;
+            get => BackingResource ?? GetParent<SshSessionStep>()?.GetSshResource();
             set
             {
-                if (GetParent<SshSessionStep>()?.SshResource == value)
+                if (GetParent<SshSessionStep>()?.GetSshResource() == value)
                 {
                     BackingResource = null;
                 }

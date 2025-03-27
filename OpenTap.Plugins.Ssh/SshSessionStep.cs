@@ -26,28 +26,9 @@ namespace OpenTap.Plugins.Ssh
     [AllowChildrenOfType(typeof(ScpUploadFileStep))]
     [AllowChildrenOfType(typeof(ScpDownloadFileStep))]
     public class SshSessionStep : TestStep
-    {
-        internal class SshSessionStepResource : SshResource
-        {
-            public SshSessionStep SshSessionStep { get; internal set; }
-            public override void Open()
-            {
-                base.IsOpened = true;
-                // Do nothing. It is the SshSessionStep that controls the lifetime of this session
-            }
-
-            public override void Close()
-            {
-                base.IsOpened = false;
-                // Do nothing. It is the SshSessionStep that controls the lifetime of this session
-            }
-            public override string ToString()
-            {
-                return SshSessionStep.GetFormattedName();
-            }
-        }
-
-        internal SshSessionStepResource SshResource;
+    { 
+        private SshResource SshResource;
+        internal SshResource GetSshResource() => this.SshResource;
 
         /// <summary>
         /// The SSH client. Childsteps can use this. 
@@ -63,8 +44,8 @@ namespace OpenTap.Plugins.Ssh
         public SshSessionStep()
         {
             Connection = new SshConnectionInfo() { Owner = this };
-            SshResource = new SshSessionStepResource(){ Connection = this.Connection, SshSessionStep = this };
             Name = "SSH Session on {User Name}@{Host Name}";
+            SshResource = new SshInstrument(true, this) { Connection = this.Connection, Name = this.GetFormattedName() };
         }
 
         public override void Run()
