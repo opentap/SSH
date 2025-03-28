@@ -16,13 +16,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel;
-using System.Xml.Serialization;
 using Renci.SshNet;
 
 namespace OpenTap.Plugins.Ssh
 {
     public abstract class SshStepBase : TestStep
     {
+
         #region Settings
 
         [ResourceOpen(ResourceOpenBehavior.Ignore)]
@@ -36,29 +36,22 @@ namespace OpenTap.Plugins.Ssh
                     .Concat(DutSettings.Current.OfType<SshResource>()));
             }
         }
+        
+        private SshResource BackingResource;
 
-        [Browsable(false)]
-        [ResourceOpen(ResourceOpenBehavior.Ignore)]
-        public SshResource BackingResource { get; set; }
         [Display("Connection", "Use SSH session defined by this Instrument, DUT or Parent step.")]
         [AvailableValues(nameof(sshSessions))]
-        [Browsable(true)]
         public SshResource SshResource
         {
-            get => BackingResource ?? GetParent<SshSessionStep>()?.GetSshResource();
-            set
+            get
             {
-                if (GetParent<SshSessionStep>()?.GetSshResource() == value)
-                {
-                    BackingResource = null;
-                }
-                else
-                {
-                    BackingResource = value;
-                }
-
+                if (BackingResource == null || BackingResource.Invalid)
+                    return GetParent<SshSessionStep>()?.GetSshResource();
+                return BackingResource;
             }
+            set => BackingResource = value;
         }
+
         #endregion
 
         public SshStepBase()

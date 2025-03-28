@@ -13,7 +13,7 @@
 //limitations under the License.
 
 using Renci.SshNet;
-using System;
+using System.ComponentModel;
 
 namespace OpenTap.Plugins.Ssh
 {
@@ -43,8 +43,8 @@ namespace OpenTap.Plugins.Ssh
         {
             Name = "Ssh";
             Connection = new SshConnectionInfo() { Owner = this };
-            _isSession = session;
             _step = step;
+            IsSession = session;
         }
         
         /// <summary>
@@ -116,12 +116,17 @@ namespace OpenTap.Plugins.Ssh
             IsConnected = true;
         }
 
-        private bool _isSession = false;
+        [Browsable(false)]
+        public bool IsSession { get; set; } 
+        // If this is from a session step, and _step is null, then this resource is invalid.
+        // In that case, a step should use the resource from its parent instead.
+        // This can happen in copy-paste scenarios, or after serialization.
+        internal bool Invalid => _step == null && IsSession; 
         private ITestStep _step;
 
         public override string ToString()
         {
-            if (_isSession) return _step.GetFormattedName();
+            if (IsSession) return _step.GetFormattedName();
             return base.ToString() + $"({Connection.Username}@{Connection.Host}:{Connection.Port})";
         }
     }
