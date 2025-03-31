@@ -15,40 +15,43 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.ComponentModel;
-using OpenTap;
 using Renci.SshNet;
 
 namespace OpenTap.Plugins.Ssh
 {
     public abstract class SshStepBase : TestStep
     {
+
         #region Settings
+
         [ResourceOpen(ResourceOpenBehavior.Ignore)]
         public IEnumerable<SshResource> sshSessions
         {
             get
             {
-                var parentSessions = new List<SshResource>();
-                var parent = this.Parent;
-                while (parent != null)
-                {
-                    if (parent is SshSessionStep sessionStep)
-                    {
-                        parentSessions.Add(sessionStep.SshResource);
-                    }
-                    parent = parent.Parent;
-                }
-                return parentSessions.Concat(
-                        InstrumentSettings.Current.OfType<SshResource>()
-                        .Concat(DutSettings.Current.OfType<SshResource>()));
+                var parentSession = this.GetParent<SshSessionStep>()?.GetSshResource();
+                return (parentSession == null ? Array.Empty<SshResource>() : new[] { parentSession })
+                    .Concat(InstrumentSettings.Current.OfType<SshResource>()
+                    .Concat(DutSettings.Current.OfType<SshResource>()));
             }
         }
+        
+        private SshResource BackingResource;
 
         [Display("Connection", "Use SSH session defined by this Instrument, DUT or Parent step.")]
         [AvailableValues(nameof(sshSessions))]
-        public SshResource SshResource { get; set; }
+        public SshResource SshResource
+        {
+            get
+            {
+                if (BackingResource == null || BackingResource.Invalid)
+                    return GetParent<SshSessionStep>()?.GetSshResource();
+                return BackingResource;
+            }
+            set => BackingResource = value;
+        }
+
         #endregion
 
         public SshStepBase()
@@ -62,32 +65,78 @@ namespace OpenTap.Plugins.Ssh
     public class SshCommandStep : SshStepBase
     {
         #region Settings
-        public string Command { get; set; }
+        public string Command { get; set; } = "pwd";
+
+        [Display("Add To Log", Group: "Response", Collapsed: true, Order:0)]
+        public bool AddToLog { get; set; } = true;
+        [Display("Output Response", "Sets if the output of the ssh command should be saved as an output.", Group: "Response", Collapsed: true, Order:0)]
+        public bool OutputResponse { get; set; }
+
+        [Output]
+        [Browsable(true)]
+        [EnabledIf(nameof(OutputResponse), HideIfDisabled = true)]
+        [Display("Response", Description:"The standard output (stdout) of the executed program.", Group: "Response", Collapsed: true, Order:1)]
+        public string Response { get; private set; }
+
+        [Output]
+        [Browsable(true)]
+        [Display("Exit Code", Description:"The exit code of the command.", Group: "Response", Collapsed: true, Order:1)]
+        public int ExitCode { get; private set; }
+
+        [Display("Enabled", Group: "Timeout")]
+        public bool TimeoutEnabled { get; set; }
+        [Display("Timeout", Group: "Timeout")]
+        [Unit("s")]
+        [EnabledIf(nameof(TimeoutEnabled), HideIfDisabled = true)]
+        public double Timeout { get; set; } = 5.0;
+
+        [Display("Check Exit Code", Description: "Sets the test step verdict based on the exit code. Exit code 0 will cause the step to pass, all other exit codes will cause it to fail.", Group: "Response", Collapsed: true, Order:0)]
+        public bool CheckExitCode { get; set; }
         #endregion
 
         public SshCommandStep()
         {
-            Command = "pwd";
             Name = "SSH Command {Command}";
         }
 
         public override void Run()
         {
-            SshCommand command = SshResource.SshClient.RunCommand(Command);
+            SshCommand command = SshResource.SshClient.CreateCommand(Command);
+            if (TimeoutEnabled)
+                command.CommandTimeout = TimeSpan.FromSeconds(Timeout);
+            command.Execute();
+
+            ExitCode = command.ExitStatus;
+            if (OutputResponse)
+            {
+                Response = command.Result.TrimEnd('\n');
+            }
             if(command.ExitStatus == 0)
             {
-                //using(var reader = new StreamReader(command.OutputStream))
-                //    Log.Info(reader.ReadToEnd());
-                foreach (var line in command.Result.Trim().Split('\n'))
+                if (AddToLog)
                 {
-                    Log.Info(line);
+                    foreach (var line in command.Result.Trim().Split('\n'))
+                    {
+                        Log.Info(line);
+                    }
                 }
             }
             else
             {
-                Log.Warning(command.Error);
+                if (AddToLog)
+                    Log.Warning(command.Error);
             }
-
+            if (CheckExitCode)
+            {
+                if (ExitCode == 0)
+                {
+                    UpgradeVerdict(Verdict.Pass);
+                }
+                else
+                {
+                    UpgradeVerdict(Verdict.Fail);
+                }
+            }
         }
     }
 }
