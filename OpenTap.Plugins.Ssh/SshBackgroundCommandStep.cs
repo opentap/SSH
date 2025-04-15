@@ -35,8 +35,7 @@ namespace OpenTap.Plugins.Ssh
 
         public BackgroundSshCommandStep()
         {
-            Name = "Background SSH Command {Command}";
-            Command = "sleep 10";
+            Name = "Background SSH Command: {Command}";
         }
 
         public override void Run()
@@ -47,6 +46,8 @@ namespace OpenTap.Plugins.Ssh
             SshCommand command = SshResource.SshClient.CreateCommand($"nohup {Command} > /dev/null 2>&1 & echo $!");
             pid = command.Execute();
 
+            Log.Debug("Running full command: " + command.CommandText);
+            Log.Info($"Running command `{Command}` in the background");
         }
     }
 }

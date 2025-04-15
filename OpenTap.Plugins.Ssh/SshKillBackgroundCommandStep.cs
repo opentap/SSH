@@ -33,7 +33,7 @@ namespace OpenTap.Plugins.Ssh
 
         public KillBackgroundSshCommandStep()
         {
-            Name = "Kill Background SSH process PID {Process PID}";
+            Name = "Kill Background SSH Command: PID={Process PID}";
             InputPid = new Input<string>();
         }
 
@@ -65,8 +65,8 @@ namespace OpenTap.Plugins.Ssh
                 return;
             }
 
+            Log.Error($"Failed killing PID={pid}");
             UpgradeVerdict(Verdict.Fail);
-
         }
     }
 }
