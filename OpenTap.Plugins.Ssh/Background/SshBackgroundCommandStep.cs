@@ -18,7 +18,7 @@ using System.Linq;
 using System.ComponentModel;
 using Renci.SshNet;
 
-namespace OpenTap.Plugins.Ssh
+namespace OpenTap.Plugins.Ssh.Background
 {
     
     [Display("Background SSH Command", "Run a command in the background using a session setup by an SSH Session step, SSH Instrument or SSH Dut.", Groups: new[] { "SSH", "Background" })]
@@ -29,7 +29,7 @@ namespace OpenTap.Plugins.Ssh
 
         [Output]
         [Display("Process PID", Description:"The PID of the background process", Group: "Response")]
-        public string pid { get; private set; }
+        public Pid pid { get; private set; }
         
         #endregion
 
@@ -44,7 +44,8 @@ namespace OpenTap.Plugins.Ssh
             // output is suppressed
             // the PID of the last background process '$!' is printed to output
             SshCommand command = SshResource.SshClient.CreateCommand($"nohup {Command} > /dev/null 2>&1 & echo $!");
-            pid = command.Execute();
+            string output = command.Execute();
+            pid = new Pid(output);
 
             Log.Debug("Running full command: " + command.CommandText);
             Log.Info($"Running command `{Command}` in the background");

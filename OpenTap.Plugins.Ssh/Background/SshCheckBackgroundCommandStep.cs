@@ -18,7 +18,7 @@ using System.Linq;
 using System.ComponentModel;
 using Renci.SshNet;
 
-namespace OpenTap.Plugins.Ssh
+namespace OpenTap.Plugins.Ssh.Background
 {
     
     [Display("Check Background SSH Command", "Checks if a background command is still running.", Groups: new[] { "SSH", "Background" })]
@@ -27,14 +27,14 @@ namespace OpenTap.Plugins.Ssh
         #region Settings
         [Display("Process PID", "Select the Background SSH Command to kill")]
 
-        public Input<string> InputPid { get; set; }
+        public Input<Pid> InputPid { get; set; }
 
         #endregion
 
         public CheckBackgroundSshCommandStep()
         {
             Name = "Check Background SSH Command: PID={Process PID}";
-            InputPid = new Input<string>();
+            InputPid = new Input<Pid>();
         }
 
         public override void Run()
@@ -43,7 +43,7 @@ namespace OpenTap.Plugins.Ssh
             {
                 throw new ArgumentNullException("No PID was set");
             }
-            string pid = InputPid.Value;
+            Pid pid = InputPid.Value;
 
             SshCommand command = SshResource.SshClient.CreateCommand($"ps -p {pid}");
             command.Execute();
