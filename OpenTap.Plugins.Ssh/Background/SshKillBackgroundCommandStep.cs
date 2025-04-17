@@ -21,7 +21,7 @@ using Renci.SshNet;
 namespace OpenTap.Plugins.Ssh.Background
 {
     
-    [Display("Kill Background SSH Command", "Kills a command running in the background.", Groups: new[] { "SSH", "Background" })]
+    [Display("Kill Background SSH Command", "Kills a command running in the background.", Groups: new[] { "SSH", "Background (Linux only)" })]
     public class KillBackgroundSshCommandStep : SshStepBase
     {
         #region Settings

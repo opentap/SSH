@@ -146,6 +146,7 @@ namespace OpenTap.Plugins.Ssh
         // <summary>
         // Starts a process with the given command in the background
         // The process PID is stored in BackgroundProcesses to keep track of all processes started by this SshResource
+        // NOTE: this only works in Linux systems
         // </summary>
         public Pid StartBackgroundProcess(string command)
         {
@@ -165,6 +166,7 @@ namespace OpenTap.Plugins.Ssh
         // <summary>
         // Checks if background process with the given pid is running
         // This only works if the process was started within the same session of this SshResource
+        // NOTE: this only works in Linux systems
         // </summary>
         public bool IsBackgroundProcessRunning(Pid pid)
         {
@@ -191,6 +193,7 @@ namespace OpenTap.Plugins.Ssh
         // <summary>
         // Kills a background process
         // This only works if the process was started within the same session of this SshResource
+        // NOTE: this only works in Linux systems
         // </summary>
         public bool KillBackgroundProcess(Pid pid)
         {

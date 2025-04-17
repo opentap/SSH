@@ -21,7 +21,7 @@ using Renci.SshNet;
 namespace OpenTap.Plugins.Ssh.Background
 {
     
-    [Display("Check Background SSH Command", "Checks if a background command is still running.", Groups: new[] { "SSH", "Background" })]
+    [Display("Check Background SSH Command", "Checks if a background command is still running.", Groups: new[] { "SSH", "Background (Linux only)" })]
     public class CheckBackgroundSshCommandStep : SshStepBase
     {
         #region Settings

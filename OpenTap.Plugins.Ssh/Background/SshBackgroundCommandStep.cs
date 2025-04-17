@@ -21,7 +21,7 @@ using Renci.SshNet;
 namespace OpenTap.Plugins.Ssh.Background
 {
     
-    [Display("Background SSH Command", "Run a command in the background using a session setup by an SSH Session step, SSH Instrument or SSH Dut.", Groups: new[] { "SSH", "Background" })]
+    [Display("Background SSH Command", "Run a command in the background using a session setup by an SSH Session step, SSH Instrument or SSH Dut.", Groups: new[] { "SSH", "Background (Linux only)" })]
     public class BackgroundSshCommandStep : SshStepBase
     {
         #region Settings
