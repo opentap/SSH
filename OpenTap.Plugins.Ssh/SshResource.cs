@@ -114,7 +114,6 @@ namespace OpenTap.Plugins.Ssh
         public override void Close()
         {
             // Close all bakground processes before disconnecting ssh client
-            if (_KillAllBackgroundProcesses())
             if (!_KillAllBackgroundProcesses())
             {
                 Log.Warning("Some background processes could not be killed correctly");
