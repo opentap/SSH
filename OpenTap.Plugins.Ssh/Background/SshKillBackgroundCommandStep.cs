@@ -45,27 +45,12 @@ namespace OpenTap.Plugins.Ssh.Background
             }
             Pid pid = InputPid.Value;
 
-            SshCommand command = SshResource.SshClient.CreateCommand($"kill {pid}");
-            command.Execute();
-
-            if (command.ExitStatus == 0)
+            if (SshResource.KillBackgroundProcess(pid))
             {
-                Log.Debug($"Gracefully killed PID={pid}");
                 UpgradeVerdict(Verdict.Pass);
                 return;
             }
 
-            command = SshResource.SshClient.CreateCommand($"kill -9 {pid}");
-            command.Execute();
-
-            if (command.ExitStatus == 0)
-            {
-                Log.Debug($"SIGKILLed PID={pid}");
-                UpgradeVerdict(Verdict.Pass);
-                return;
-            }
-
-            Log.Error($"Failed killing PID={pid}");
             UpgradeVerdict(Verdict.Fail);
         }
     }

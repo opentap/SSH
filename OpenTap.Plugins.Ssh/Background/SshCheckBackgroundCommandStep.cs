@@ -39,16 +39,14 @@ namespace OpenTap.Plugins.Ssh.Background
 
         public override void Run()
         {
-            if (InputPid == null)
+            if (InputPid == null || InputPid.Value == null)
             {
                 throw new ArgumentNullException("No PID was set");
             }
             Pid pid = InputPid.Value;
 
-            SshCommand command = SshResource.SshClient.CreateCommand($"ps -p {pid}");
-            command.Execute();
-
-            if (command.ExitStatus == 0)
+            bool isRunning = SshResource.IsBackgroundProcessRunning(pid);
+            if (isRunning)
             {
                 Log.Info($"Process with PID={pid} is alive");
                 UpgradeVerdict(Verdict.Pass);

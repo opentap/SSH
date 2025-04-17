@@ -40,14 +40,7 @@ namespace OpenTap.Plugins.Ssh.Background
 
         public override void Run()
         {
-            // nohup allows the command to run even when the SSH session ends
-            // output is suppressed
-            // the PID of the last background process '$!' is printed to output
-            SshCommand command = SshResource.SshClient.CreateCommand($"nohup {Command} > /dev/null 2>&1 & echo $!");
-            string output = command.Execute();
-            pid = new Pid(output);
-
-            Log.Debug("Running full command: " + command.CommandText);
+            pid = SshResource.StartBackgroundProcess(Command);
             Log.Info($"Running command `{Command}` in the background");
         }
     }
