@@ -16,6 +16,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Renci.SshNet;
 
 namespace OpenTap.Plugins.Ssh
@@ -36,7 +39,7 @@ namespace OpenTap.Plugins.Ssh
                     .Concat(DutSettings.Current.OfType<SshResource>()));
             }
         }
-        
+
         private SshResource BackingResource;
 
         [Display("Connection", "Use SSH session defined by this Instrument, DUT or Parent step.")]
@@ -67,20 +70,26 @@ namespace OpenTap.Plugins.Ssh
         #region Settings
         public string Command { get; set; } = "pwd";
 
-        [Display("Add To Log", Group: "Response", Collapsed: true, Order:0)]
+        [Display("Add To Log", Group: "Response", Collapsed: true, Order: 0)]
         public bool AddToLog { get; set; } = true;
-        [Display("Output Response", "Sets if the output of the ssh command should be saved as an output.", Group: "Response", Collapsed: true, Order:0)]
+
+        [EnabledIf(nameof(AddToLog), HideIfDisabled = true)]
+        [Display("Continous Output", Description: "Whether the output should be logged all at once after the command has executed, or continuously as it is produced.", Group: "Response", Collapsed: true, Order: 0)]
+        public bool ContinousOutput { get; set; } = false;
+
+        [Display("Output Response", "Sets if the output of the ssh command should be saved as an output.", Group: "Response", Collapsed: true, Order: 0)]
         public bool OutputResponse { get; set; }
 
         [Output]
         [Browsable(true)]
         [EnabledIf(nameof(OutputResponse), HideIfDisabled = true)]
-        [Display("Response", Description:"The standard output (stdout) of the executed program.", Group: "Response", Collapsed: true, Order:1)]
+        [Display("Response", Description: "The standard output (stdout) of the executed program.", Group: "Response", Collapsed: true, Order: 1)]
         public string Response { get; private set; }
+
 
         [Output]
         [Browsable(true)]
-        [Display("Exit Code", Description:"The exit code of the command.", Group: "Response", Collapsed: true, Order:1)]
+        [Display("Exit Code", Description: "The exit code of the command.", Group: "Response", Collapsed: true, Order: 1)]
         public int ExitCode { get; private set; }
 
         [Display("Enabled", Group: "Timeout")]
@@ -90,7 +99,7 @@ namespace OpenTap.Plugins.Ssh
         [EnabledIf(nameof(TimeoutEnabled), HideIfDisabled = true)]
         public double Timeout { get; set; } = 5.0;
 
-        [Display("Check Exit Code", Description: "Sets the test step verdict based on the exit code. Exit code 0 will cause the step to pass, all other exit codes will cause it to fail.", Group: "Response", Collapsed: true, Order:0)]
+        [Display("Check Exit Code", Description: "Sets the test step verdict based on the exit code. Exit code 0 will cause the step to pass, all other exit codes will cause it to fail.", Group: "Response", Collapsed: true, Order: 0)]
         public bool CheckExitCode { get; set; }
         #endregion
 
@@ -104,14 +113,18 @@ namespace OpenTap.Plugins.Ssh
             SshCommand command = SshResource.SshClient.CreateCommand(Command);
             if (TimeoutEnabled)
                 command.CommandTimeout = TimeSpan.FromSeconds(Timeout);
-            command.Execute();
+
+            if (ContinousOutput)
+                ExecuteAsync(command).GetAwaiter().GetResult();
+            else
+                command.Execute();
 
             ExitCode = command.ExitStatus;
             if (OutputResponse)
             {
                 Response = command.Result.TrimEnd('\n');
             }
-            if(command.ExitStatus == 0)
+            if (command.ExitStatus == 0)
             {
                 if (AddToLog)
                 {
@@ -137,6 +150,29 @@ namespace OpenTap.Plugins.Ssh
                     UpgradeVerdict(Verdict.Fail);
                 }
             }
+        }
+
+        public async Task ExecuteAsync(SshCommand command)
+        {
+            var result = command.BeginExecute();
+            var reader = new StreamReader(command.OutputStream, Encoding.UTF8);
+
+            char[] buffer = new char[1024];
+            while (!result.IsCompleted || !reader.EndOfStream)
+            {
+                var read = await reader.ReadAsync(buffer, 0, buffer.Length);
+                if (read > 0)
+                {
+                    var text = new string(buffer, 0, read);
+                    Log.Info(text);
+                }
+                else
+                {
+                    await Task.Delay(50);
+                }
+            }
+
+            command.EndExecute(result);
         }
     }
 }
