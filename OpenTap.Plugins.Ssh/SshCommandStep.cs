@@ -73,10 +73,6 @@ namespace OpenTap.Plugins.Ssh
         [Display("Add To Log", Group: "Response", Collapsed: true, Order: 0)]
         public bool AddToLog { get; set; } = true;
 
-        [EnabledIf(nameof(AddToLog), HideIfDisabled = true)]
-        [Display("Continous Output", Description: "Whether the output should be logged all at once after the command has executed, or continuously as it is produced.", Group: "Response", Collapsed: true, Order: 0)]
-        public bool ContinousOutput { get; set; } = false;
-
         [Display("Output Response", "Sets if the output of the ssh command should be saved as an output.", Group: "Response", Collapsed: true, Order: 0)]
         public bool OutputResponse { get; set; }
 
@@ -114,31 +110,12 @@ namespace OpenTap.Plugins.Ssh
             if (TimeoutEnabled)
                 command.CommandTimeout = TimeSpan.FromSeconds(Timeout);
 
-            if (ContinousOutput)
+            if (AddToLog)
                 ExecuteAsync(command).GetAwaiter().GetResult();
             else
                 command.Execute();
 
             ExitCode = command.ExitStatus;
-            if (OutputResponse)
-            {
-                Response = command.Result.TrimEnd('\n');
-            }
-            if (command.ExitStatus == 0)
-            {
-                if (AddToLog)
-                {
-                    foreach (var line in command.Result.Trim().Split('\n'))
-                    {
-                        Log.Info(line);
-                    }
-                }
-            }
-            else
-            {
-                if (AddToLog)
-                    Log.Warning(command.Error);
-            }
             if (CheckExitCode)
             {
                 if (ExitCode == 0)
@@ -152,27 +129,36 @@ namespace OpenTap.Plugins.Ssh
             }
         }
 
-        public async Task ExecuteAsync(SshCommand command)
+        private async Task ExecuteAsync(SshCommand command)
         {
             var result = command.BeginExecute();
-            var reader = new StreamReader(command.OutputStream, Encoding.UTF8);
+            var outputReader = new StreamReader(command.OutputStream, Encoding.UTF8);
+            var errorReader = new StreamReader(command.ExtendedOutputStream, Encoding.UTF8);
 
-            char[] buffer = new char[1024];
+            var outputTask = ReadStreamAsync(outputReader, line => Log.Info(line), result);
+            var errorTask = ReadStreamAsync(errorReader, line => Log.Warning(line), result);
+
+            await Task.WhenAll(outputTask, errorTask);
+
+            command.EndExecute(result);
+        }
+
+        private async Task ReadStreamAsync(StreamReader reader, Action<string> logAction, IAsyncResult result)
+        {
+            var buffer = new char[1024];
             while (!result.IsCompleted || !reader.EndOfStream)
             {
                 var read = await reader.ReadAsync(buffer, 0, buffer.Length);
                 if (read > 0)
                 {
                     var text = new string(buffer, 0, read);
-                    Log.Info(text);
+                    logAction(text.TrimEnd('\n'));
                 }
                 else
                 {
                     await Task.Delay(50);
                 }
             }
-
-            command.EndExecute(result);
         }
     }
 }
