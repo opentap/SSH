@@ -146,18 +146,11 @@ namespace OpenTap.Plugins.Ssh
         private async Task ReadStreamAsync(StreamReader reader, Action<string> logAction, IAsyncResult result)
         {
             var buffer = new char[1024];
-            while (!result.IsCompleted || !reader.EndOfStream)
+            var line = await reader.ReadLineAsync();
+            while (!result.IsCompleted || line != null)
             {
-                var read = await reader.ReadAsync(buffer, 0, buffer.Length);
-                if (read > 0)
-                {
-                    var text = new string(buffer, 0, read);
-                    logAction(text.TrimEnd('\n'));
-                }
-                else
-                {
-                    await Task.Delay(50);
-                }
+                logAction(line);
+                line = await reader.ReadLineAsync();
             }
         }
     }
