@@ -16,6 +16,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Renci.SshNet;
 
 namespace OpenTap.Plugins.Ssh
@@ -36,7 +39,7 @@ namespace OpenTap.Plugins.Ssh
                     .Concat(DutSettings.Current.OfType<SshResource>()));
             }
         }
-        
+
         private SshResource BackingResource;
 
         [Display("Connection", "Use SSH session defined by this Instrument, DUT or Parent step.")]
@@ -67,20 +70,22 @@ namespace OpenTap.Plugins.Ssh
         #region Settings
         public string Command { get; set; } = "pwd";
 
-        [Display("Add To Log", Group: "Response", Collapsed: true, Order:0)]
+        [Display("Add To Log", Group: "Response", Collapsed: true, Order: 0)]
         public bool AddToLog { get; set; } = true;
-        [Display("Output Response", "Sets if the output of the ssh command should be saved as an output.", Group: "Response", Collapsed: true, Order:0)]
+
+        [Display("Output Response", "Sets if the output of the ssh command should be saved as an output.", Group: "Response", Collapsed: true, Order: 0)]
         public bool OutputResponse { get; set; }
 
         [Output]
         [Browsable(true)]
         [EnabledIf(nameof(OutputResponse), HideIfDisabled = true)]
-        [Display("Response", Description:"The standard output (stdout) of the executed program.", Group: "Response", Collapsed: true, Order:1)]
+        [Display("Response", Description: "The standard output (stdout) of the executed program.", Group: "Response", Collapsed: true, Order: 1)]
         public string Response { get; private set; }
+
 
         [Output]
         [Browsable(true)]
-        [Display("Exit Code", Description:"The exit code of the command.", Group: "Response", Collapsed: true, Order:1)]
+        [Display("Exit Code", Description: "The exit code of the command.", Group: "Response", Collapsed: true, Order: 1)]
         public int ExitCode { get; private set; }
 
         [Display("Enabled", Group: "Timeout")]
@@ -90,7 +95,7 @@ namespace OpenTap.Plugins.Ssh
         [EnabledIf(nameof(TimeoutEnabled), HideIfDisabled = true)]
         public double Timeout { get; set; } = 5.0;
 
-        [Display("Check Exit Code", Description: "Sets the test step verdict based on the exit code. Exit code 0 will cause the step to pass, all other exit codes will cause it to fail.", Group: "Response", Collapsed: true, Order:0)]
+        [Display("Check Exit Code", Description: "Sets the test step verdict based on the exit code. Exit code 0 will cause the step to pass, all other exit codes will cause it to fail.", Group: "Response", Collapsed: true, Order: 0)]
         public bool CheckExitCode { get; set; }
         #endregion
 
@@ -104,28 +109,13 @@ namespace OpenTap.Plugins.Ssh
             SshCommand command = SshResource.SshClient.CreateCommand(Command);
             if (TimeoutEnabled)
                 command.CommandTimeout = TimeSpan.FromSeconds(Timeout);
-            command.Execute();
+
+            if (AddToLog)
+                ExecuteAsync(command).GetAwaiter().GetResult();
+            else
+                command.Execute();
 
             ExitCode = command.ExitStatus;
-            if (OutputResponse)
-            {
-                Response = command.Result.TrimEnd('\n');
-            }
-            if(command.ExitStatus == 0)
-            {
-                if (AddToLog)
-                {
-                    foreach (var line in command.Result.Trim().Split('\n'))
-                    {
-                        Log.Info(line);
-                    }
-                }
-            }
-            else
-            {
-                if (AddToLog)
-                    Log.Warning(command.Error);
-            }
             if (CheckExitCode)
             {
                 if (ExitCode == 0)
@@ -136,6 +126,31 @@ namespace OpenTap.Plugins.Ssh
                 {
                     UpgradeVerdict(Verdict.Fail);
                 }
+            }
+        }
+
+        private async Task ExecuteAsync(SshCommand command)
+        {
+            var result = command.BeginExecute();
+            var outputReader = new StreamReader(command.OutputStream, Encoding.UTF8);
+            var errorReader = new StreamReader(command.ExtendedOutputStream, Encoding.UTF8);
+
+            var outputTask = ReadStreamAsync(outputReader, line => Log.Info(line), result);
+            var errorTask = ReadStreamAsync(errorReader, line => Log.Warning(line), result);
+
+            await Task.WhenAll(outputTask, errorTask);
+
+            command.EndExecute(result);
+        }
+
+        private async Task ReadStreamAsync(StreamReader reader, Action<string> logAction, IAsyncResult result)
+        {
+            var buffer = new char[1024];
+            var line = await reader.ReadLineAsync();
+            while (!result.IsCompleted || line != null)
+            {
+                logAction(line);
+                line = await reader.ReadLineAsync();
             }
         }
     }
